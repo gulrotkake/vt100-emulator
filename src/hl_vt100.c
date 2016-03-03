@@ -27,7 +27,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
+#if __linux__
 #include <pty.h>
+#else
+#include <util.h>
+#endif
+
 #include <stdlib.h>
 #include "hl_vt100.h"
 
@@ -45,17 +51,17 @@ static void set_non_canonical(struct vt100_headless *this, int fd)
 {
     struct termios termios;
 
-    ioctl(fd, TCGETS, &this->backup);
-    ioctl(fd, TCGETS, &termios);
+    tcgetattr(fd, &this->backup);
+    tcgetattr(fd, &termios);
     termios.c_iflag |= ICANON;
     termios.c_cc[VMIN] = 1;
     termios.c_cc[VTIME] = 0;
-    ioctl(fd, TCSETS, &termios);
+    tcsetattr(fd, TCSAFLUSH, &termios);
 }
 
 static void restore_termios(struct vt100_headless *this, int fd)
 {
-    ioctl(fd, TCSETS, &this->backup);
+    tcsetattr(fd, TCSAFLUSH, &this->backup);
 }
 
 #ifndef NDEBUG
