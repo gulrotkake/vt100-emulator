@@ -279,7 +279,7 @@ static void RM(struct lw_terminal *term_emul)
         mode = term_emul->argv[0];
         if (mode == DECCOLM)
         {
-            vt100->width = 80;
+            vt100->width = vt100->reset_width;
             vt100->x = vt100->y = 0;
             blank_screen(vt100);
         }
@@ -983,34 +983,35 @@ const char **lw_terminal_vt100_getlines(struct lw_terminal_vt100 *vt100)
     return (const char **)vt100->lines;
 }
 
-struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data,
+struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data, unsigned width, unsigned height,
                                      void (*unimplemented)(struct lw_terminal* term_emul, char *seq, char chr))
 {
     struct lw_terminal_vt100 *this;
-
+    unsigned min_width = width>132? width : 132;
     this = calloc(1, sizeof(*this));
     if (this == NULL)
         return NULL;
     this->user_data = user_data;
-    this->height = 24;
-    this->width = 80;
-    this->screen = malloc(132 * SCROLLBACK * this->height);
+    this->height = height;
+    this->width = width;
+    this->reset_width = width;
+    this->screen = malloc(min_width * SCROLLBACK * this->height);
     if (this->screen == NULL)
         goto free_this;
-    memset(this->screen, ' ', 132 * SCROLLBACK * this->height);
-    this->frozen_screen = malloc(132 * this->height);
+    memset(this->screen, ' ', min_width * SCROLLBACK * this->height);
+    this->frozen_screen = malloc(min_width * this->height);
     if (this->frozen_screen == NULL)
         goto free_screen;
-    memset(this->frozen_screen, ' ', 132 * this->height);
-    this->sgr_screen = calloc(132 * SCROLLBACK * this->height, sizeof(uint32_t));
+    memset(this->frozen_screen, ' ', min_width * this->height);
+    this->sgr_screen = calloc(min_width * SCROLLBACK * this->height, sizeof(uint32_t));
     if (this->sgr_screen == NULL) {
         goto free_frozen_screen;
     }
-    this->sgr_frozen_screen = calloc(132 * this->height, sizeof(uint32_t));
+    this->sgr_frozen_screen = calloc(min_width * this->height, sizeof(uint32_t));
     if (this->sgr_frozen_screen == NULL) {
         goto free_sgr_screen;
     }
-    this->tabulations = malloc(132);
+    this->tabulations = malloc(min_width);
     if (this->tabulations == NULL)
         goto free_sgr_frozen_screen;
     if (this->tabulations == NULL)

@@ -35,7 +35,7 @@
  * It's a vt100 implementation, that implements ANSI control function.
  */
 
-#define SCROLLBACK 3
+#define SCROLLBACK 1
 
 #define MASK_LNM     1
 #define MASK_DECCKM  2
@@ -73,6 +73,7 @@
 struct lw_terminal_vt100
 {
     struct lw_terminal *lw_terminal;
+    unsigned int reset_width;
     unsigned int width;
     unsigned int height;
     unsigned int x;
@@ -96,7 +97,7 @@ struct lw_terminal_vt100
     pthread_mutex_t mutex;
 };
 
-struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data,
+struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data, unsigned width, unsigned height,
                                      void (*unimplemented)(struct lw_terminal* term_emul,
                                                            char *seq, char chr));
 char lw_terminal_vt100_get(struct lw_terminal_vt100 *vt100, unsigned int x, unsigned int y);
