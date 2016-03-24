@@ -1069,8 +1069,13 @@ free_this:
 
 void lw_terminal_vt100_read_str(struct lw_terminal_vt100 *this, char *buffer)
 {
+    lw_terminal_vt100_read_buffer(this, buffer, strlen(buffer));
+}
+
+void lw_terminal_vt100_read_buffer(struct lw_terminal_vt100 *this, char *buffer, size_t len)
+{
     pthread_mutex_lock(&this->mutex);
-    lw_terminal_parser_read_str(this->lw_terminal, buffer);
+    lw_terminal_parser_read_buffer(this->lw_terminal, buffer, len);
     pthread_mutex_unlock(&this->mutex);
 }
 

@@ -106,5 +106,6 @@ uint32_t lw_terminal_vt100_graphics_rendition(struct lw_terminal_vt100 *vt100, u
 
 void lw_terminal_vt100_destroy(struct lw_terminal_vt100 *this);
 void lw_terminal_vt100_read_str(struct lw_terminal_vt100 *this, char *buffer);
+void lw_terminal_vt100_read_buffer(struct lw_terminal_vt100 *this, char *buffer, size_t len);
 
 #endif

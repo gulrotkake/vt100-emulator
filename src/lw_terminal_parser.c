@@ -188,10 +188,11 @@ void lw_terminal_parser_read(struct lw_terminal *this, char c)
     }
 }
 
-void lw_terminal_parser_read_str(struct lw_terminal *this, char *c)
+void lw_terminal_parser_read_buffer(struct lw_terminal *this, char *c, size_t len)
 {
-    while (*c)
-        lw_terminal_parser_read(this, *c++);
+    size_t i;
+    for (i = 0; i<len; ++i)
+        lw_terminal_parser_read(this, c[i]);
 }
 
 #ifndef NDEBUG
