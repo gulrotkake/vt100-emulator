@@ -211,9 +211,9 @@ void lw_terminal_parser_default_unimplemented(struct lw_terminal* this, char *se
 #else
 void lw_terminal_parser_default_unimplemented(struct lw_terminal* this, char *seq, char chr)
 {
-    this = this;
-    seq = seq;
-    chr = chr;
+    (void)this;
+    (void)seq;
+    (void)chr;
 }
 #endif
 
