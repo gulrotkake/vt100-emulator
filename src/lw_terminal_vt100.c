@@ -502,7 +502,7 @@ static void SGR(struct lw_terminal *term_emul)
     }
     vt100->sgr = attr;
     return;
- fail:
+fail:
     vt100->sgr = 0;
 }
 
@@ -1055,7 +1055,7 @@ free_tabulations:
     free(this->tabulations);
 free_sgr_frozen_screen:
     free(this->sgr_frozen_screen);
- free_sgr_screen:
+free_sgr_screen:
     free(this->sgr_screen);
 free_frozen_screen:
     free(this->frozen_screen);
