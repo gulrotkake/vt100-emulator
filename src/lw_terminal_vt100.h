@@ -87,6 +87,7 @@ struct lw_terminal_vt100
     char         *tabulations;
     unsigned int selected_charset;
     unsigned int modes;
+    uint32_t     sgr;
     char         *lines[80];
     void         (*master_write)(void *user_data, void *buffer, size_t len);
     void         *user_data;

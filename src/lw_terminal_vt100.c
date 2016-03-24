@@ -441,8 +441,57 @@ static void DECSTBM(struct lw_terminal *term_emul)
 */
 static void SGR(struct lw_terminal *term_emul)
 {
-    term_emul = term_emul;
-    /* Just ignore them for now, we are rendering pure text only */
+    unsigned int i = 0;
+    uint32_t attr = 0;
+    unsigned int argv;
+    struct lw_terminal_vt100 *vt100;
+    vt100 = (struct lw_terminal_vt100 *)term_emul->user_data;
+    for (i = 0; i<term_emul->argc; ++i) {
+        argv = term_emul->argv[i];
+        switch (argv) {
+        case 0:
+            attr = 0;
+            break;
+        case 1:
+            attr |= 0x80000;
+            break;
+        case 4:
+            attr |= 0x100000;
+            break;
+        case 5:
+            attr |= 0x40000;
+            break;
+        case 7:
+            attr |= 0x200000;
+            break;
+        case 38:
+            if (i+2>=term_emul->argc) goto fail;
+            if (term_emul->argv[i+1] == 5) {
+                attr |= ((uint16_t)(term_emul->argv[i+2]) & 0x0FF);
+                attr |= 0x100;
+            }
+            break;
+        case 48:
+            if (i+2>=term_emul->argc) goto fail;
+            if (term_emul->argv[i+1] == 5) {
+                attr |= ((uint16_t)(term_emul->argv[i+2]) & 0xFF) << 9;
+                attr |= (0x100 << 9);
+            }
+            break;
+        default:
+            if (argv>30 && argv<38) {
+                attr &= ~((uint32_t)0x1FF);
+                attr |= ((uint16_t)(argv) & 0xFF);
+            } if (argv>40 && argv<48) {
+                attr &= ~(((uint32_t)0x1FF) << 9);
+                attr |= ((uint16_t)(argv) & 0x1FF) << 9;
+            }
+        }
+    }
+    vt100->sgr = attr;
+    return;
+ fail:
+    vt100->sgr = 0;
 }
 
 /*
@@ -952,6 +1001,7 @@ struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data,
     this->x = 0;
     this->y = 0;
     this->modes = MASK_DECANM;
+    this->sgr = 0;
     this->top_line = 0;
     this->lw_terminal = lw_terminal_parser_init();
     if (this->lw_terminal == NULL)
