@@ -82,6 +82,8 @@ struct lw_terminal_vt100
     unsigned int margin_top;
     unsigned int margin_bottom;
     unsigned int top_line; /* Line at the top of the display */
+    uint32_t     *sgr_screen;
+    uint32_t     *sgr_frozen_screen;
     char         *screen;
     char         *frozen_screen;
     char         *tabulations;
@@ -99,6 +101,8 @@ struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data,
                                                            char *seq, char chr));
 char lw_terminal_vt100_get(struct lw_terminal_vt100 *vt100, unsigned int x, unsigned int y);
 const char **lw_terminal_vt100_getlines(struct lw_terminal_vt100 *vt100);
+uint32_t lw_terminal_vt100_graphics_rendition(struct lw_terminal_vt100 *vt100, unsigned int x, unsigned int y);
+
 void lw_terminal_vt100_destroy(struct lw_terminal_vt100 *this);
 void lw_terminal_vt100_read_str(struct lw_terminal_vt100 *this, char *buffer);
 

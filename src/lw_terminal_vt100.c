@@ -188,10 +188,13 @@ static void set(struct lw_terminal_vt100 *headless_term,
                 unsigned int x, unsigned int y,
                 char c)
 {
-    if (y < headless_term->margin_top || y > headless_term->margin_bottom)
+    if (y < headless_term->margin_top || y > headless_term->margin_bottom) {
+        headless_term->sgr_frozen_screen[SCREEN_PTR(headless_term, x, y)] = headless_term->sgr;
         headless_term->frozen_screen[FROZEN_SCREEN_PTR(headless_term, x, y)] = c;
-    else
+    } else {
+        headless_term->sgr_screen[SCREEN_PTR(headless_term, x, y)] = headless_term->sgr;
         headless_term->screen[SCREEN_PTR(headless_term, x, y)] = c;
+    }
 }
 
 
@@ -201,6 +204,15 @@ char lw_terminal_vt100_get(struct lw_terminal_vt100 *vt100, unsigned int x, unsi
         return vt100->frozen_screen[FROZEN_SCREEN_PTR(vt100, x, y)];
     else
         return vt100->screen[SCREEN_PTR(vt100, x, y)];
+}
+
+uint32_t lw_terminal_vt100_graphics_rendition(struct lw_terminal_vt100 *vt100, unsigned int x, unsigned int y)
+{
+    if (y < vt100->margin_top || y > vt100->margin_bottom) {
+        return vt100->sgr_frozen_screen[FROZEN_SCREEN_PTR(vt100, x, y)];
+    } else {
+        return vt100->sgr_screen[SCREEN_PTR(vt100, x, y)];
+    }
 }
 
 static void froze_line(struct lw_terminal_vt100 *vt100, unsigned int y)
@@ -990,9 +1002,17 @@ struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data,
     if (this->frozen_screen == NULL)
         goto free_screen;
     memset(this->frozen_screen, ' ', 132 * this->height);
+    this->sgr_screen = calloc(132 * SCROLLBACK * this->height, sizeof(uint32_t));
+    if (this->sgr_screen == NULL) {
+        goto free_frozen_screen;
+    }
+    this->sgr_frozen_screen = calloc(132 * this->height, sizeof(uint32_t));
+    if (this->sgr_frozen_screen == NULL) {
+        goto free_sgr_screen;
+    }
     this->tabulations = malloc(132);
     if (this->tabulations == NULL)
-        goto free_frozen_screen;
+        goto free_sgr_frozen_screen;
     if (this->tabulations == NULL)
         return NULL;
     this->margin_top = 0;
@@ -1033,6 +1053,10 @@ struct lw_terminal_vt100 *lw_terminal_vt100_init(void *user_data,
     return this;
 free_tabulations:
     free(this->tabulations);
+free_sgr_frozen_screen:
+    free(this->sgr_frozen_screen);
+ free_sgr_screen:
+    free(this->sgr_screen);
 free_frozen_screen:
     free(this->frozen_screen);
 free_screen:
@@ -1054,5 +1078,7 @@ void lw_terminal_vt100_destroy(struct lw_terminal_vt100 *this)
     lw_terminal_parser_destroy(this->lw_terminal);
     free(this->screen);
     free(this->frozen_screen);
+    free(this->sgr_screen);
+    free(this->sgr_frozen_screen);
     free(this);
 }
