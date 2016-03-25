@@ -901,7 +901,7 @@ static void TBC(struct lw_terminal *term_emul)
     }
     else if (term_emul->argc == 1 && term_emul->argv[0] == 3)
     {
-        for (i = 0; i < 132; ++i)
+        for (i = 0; i < vt100->width; ++i)
             vt100->tabulations[i] = '-';
     }
 }
@@ -941,11 +941,14 @@ static void vt100_write(struct lw_terminal *term_emul, char c)
     }
     if (c == '\t')
     {
+        uint32_t sgr = vt100->sgr;
+        vt100->sgr = 0;
         do
         {
             set(vt100, vt100->x, vt100->y, ' ');
             vt100->x += 1;
         } while (vt100->x < vt100->width && vt100->tabulations[vt100->x] == '-');
+        vt100->sgr = sgr;
         return ;
     }
     if (c == '\016')
